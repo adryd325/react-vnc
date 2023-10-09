@@ -342,7 +342,16 @@ const VncScreen: React.ForwardRefRenderFunction<VncScreenHandle, Props> = (props
         handleClick();
     };
 
-    const handleMouseLeave = () => {
+    const handleMouseLeave = (e:any) => {
+        // https://github.com/roerohan/react-vnc/issues/5#issuecomment-1753065170
+        // FIXME: We see spurious mouse leave events in Chrome when the user clicks
+        // on the canvas.
+        // This hack drops the mouseleave event if the target is the window object.
+        if (e.relatedTarget) {
+            if (e.relatedTarget.window) {
+                return;
+            }
+        }
         const rfb = getRfb();
         if (!rfb) {
             return;
