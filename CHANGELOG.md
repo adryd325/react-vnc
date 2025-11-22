@@ -1,3 +1,10 @@
+# [3.2.0](https://github.com/roerohan/react-vnc/compare/v3.1.0...v3.2.0) (2025-11-22)
+
+
+### Features
+
+* **vncscreen.tsx:** supports a websocket instance as prop which may be pre-authenticated ([2cdfb01](https://github.com/roerohan/react-vnc/commit/2cdfb01d474d2d6553d698b8adfea1e70a2eb7b1))
+
 # [3.1.0](https://github.com/roerohan/react-vnc/compare/v3.0.8...v3.1.0) (2025-04-24)
 
 
