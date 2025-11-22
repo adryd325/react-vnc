@@ -10,7 +10,8 @@ import RFB, { NoVncEventType, NoVncEvents, NoVncOptions } from '@novnc/novnc/lib
 type EventListeners = { [T in NoVncEventType]?: (event: NoVncEvents[T]) => void };
 
 export interface Props {
-    url: string;
+    url?: string;
+    websocket?: WebSocket;
     style?: object;
     className?: string;
     viewOnly?: boolean;
@@ -66,6 +67,7 @@ const VncScreen: React.ForwardRefRenderFunction<VncScreenHandle, Props> = (props
 
     const {
         url,
+        websocket,
         style,
         className,
         viewOnly,
@@ -134,7 +136,7 @@ const VncScreen: React.ForwardRefRenderFunction<VncScreenHandle, Props> = (props
         }
 
         const connected = getConnected();
-        if (connected) {
+        if (connected && !websocket) {
             logger.info(`Unexpectedly disconnected from remote VNC, retrying in ${retryDuration / 1000} seconds.`);
 
             timeouts.current.push(setTimeout(connect, retryDuration));
@@ -205,9 +207,14 @@ const VncScreen: React.ForwardRefRenderFunction<VncScreenHandle, Props> = (props
                 return;
             }
 
+            if (!url && !websocket) {
+                logger.error('Either url or websocket must be provided');
+                return;
+            }
+
             screen.current.innerHTML = '';
 
-            const _rfb = new RFB(screen.current, url, rfbOptions);
+            const _rfb = new RFB(screen.current, websocket || url!, rfbOptions);
 
             _rfb.viewOnly = viewOnly ?? false;
             _rfb.focusOnClick = focusOnClick ?? false;

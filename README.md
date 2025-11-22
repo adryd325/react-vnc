@@ -131,13 +131,76 @@ function App() {
 export default App;
 ```
 
-The only `required` parameter is `url`, which must be a `ws://` or a `wss://` (websocket) URL for the library to function properly. noVNC can display only websocket URLs. All other props to `VncScreen` are optional. The following is a list (an interface) of all props along with their types.
+### Using Pre-Authenticated WebSocket
+
+If you need to handle authentication or perform a custom handshake before establishing the VNC connection, you can pass a pre-authenticated WebSocket instance instead of a URL:
+
+```ts
+import React, { useEffect, useState } from 'react';
+import { VncScreen } from 'react-vnc';
+
+function App() {
+  const [websocket, setWebsocket] = useState<WebSocket | null>(null);
+
+  useEffect(() => {
+    // Create WebSocket and handle authentication
+    const ws = new WebSocket('ws://your-vnc-server.com');
+    
+    ws.addEventListener('open', () => {
+      // Perform custom authentication or handshake
+      ws.send(JSON.stringify({ token: 'your-auth-token' }));
+    });
+
+    ws.addEventListener('message', (event) => {
+      const response = JSON.parse(event.data);
+      if (response.authenticated) {
+        // Once authenticated, pass the WebSocket to VncScreen
+        setWebsocket(ws);
+      }
+    });
+
+    return () => {
+      ws.close();
+    };
+  }, []);
+
+  if (!websocket) {
+    return <div>Authenticating...</div>;
+  }
+
+  return (
+    <VncScreen
+      websocket={websocket}
+      scaleViewport
+      style={{
+        width: '75vw',
+        height: '75vh',
+      }}
+    />
+  );
+}
+
+export default App;
+```
+
+This approach is particularly useful for:
+- Cookie-based authentication
+- Custom authentication protocols
+- Connection pooling or reuse
+- Advanced WebSocket configuration
+
+Either `url` or `websocket` is required:
+- **`url`**: A `ws://` or `wss://` websocket URL to connect to the VNC server
+- **`websocket`**: A pre-authenticated WebSocket instance (useful for custom authentication flows)
+
+All other props to `VncScreen` are optional. The following is a list (an interface) of all props along with their types.
 
 ```ts
 type EventListeners = { [T in NoVncEventType]?: (event: NoVncEvents[T]) => void };
 
 interface Props {
-    url: string;
+    url?: string;
+    websocket?: WebSocket;
     style?: object;
     className?: string;
     viewOnly?: boolean;
